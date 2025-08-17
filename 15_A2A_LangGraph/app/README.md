@@ -151,7 +151,7 @@ cp /path/to/your/documents/*.pdf data/
 uv run python -m app
 
 # Or with custom host/port
-uv run python -m app --host 0.0.0.0 --port 8080
+uv run python -m app --host 0.0.0.0 --port 8181
 ```
 
 ### LangGraph Server
