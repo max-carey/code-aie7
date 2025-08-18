@@ -101,42 +101,60 @@ class A2AIntegration:
     def _extract_response_content(self, response_data: Dict[str, Any]) -> Dict[str, Any]:
         """Extract content from A2A response"""
         try:
-            # Navigate the response structure to extract the actual content
+            # Handle direct response structure (no 'root' wrapper)
+            result = response_data
             if 'root' in response_data and 'result' in response_data['root']:
                 result = response_data['root']['result']
-                
-                # Try to get the message content
-                if 'message' in result and 'parts' in result['message']:
-                    parts = result['message']['parts']
-                    if parts and 'text' in parts[0]:
+            elif 'result' in response_data:
+                result = response_data['result']
+            
+            # Try to extract content from various response formats
+            content = None
+            
+            # Check for artifacts first (most common for completed tasks)
+            if 'artifacts' in result and result['artifacts']:
+                artifacts = result['artifacts']
+                if artifacts and isinstance(artifacts, list) and len(artifacts) > 0:
+                    artifact = artifacts[0]
+                    if 'parts' in artifact and artifact['parts']:
+                        parts = artifact['parts']
+                        if parts and isinstance(parts, list) and len(parts) > 0:
+                            if 'text' in parts[0]:
+                                content = parts[0]['text']
+            
+            # Fallback to message content
+            if not content and 'message' in result and 'parts' in result['message']:
+                parts = result['message']['parts']
+                if parts and isinstance(parts, list) and len(parts) > 0:
+                    if 'text' in parts[0]:
                         content = parts[0]['text']
-                    else:
-                        content = str(result['message'])
-                elif 'artifacts' in result and result['artifacts']:
-                    # Check for artifacts (like final results)
-                    artifacts = result['artifacts']
-                    if artifacts and 'parts' in artifacts[0]:
-                        artifact_parts = artifacts[0]['parts']
-                        if artifact_parts and 'text' in artifact_parts[0]:
-                            content = artifact_parts[0]['text']
-                        else:
-                            content = str(artifacts[0])
-                    else:
-                        content = str(artifacts)
-                else:
-                    content = f"Response received but content format unexpected: {result}"
-                
-                return {
-                    'content': content,
-                    'task_id': result.get('id'),
-                    'context_id': result.get('context_id'),
-                    'status': result.get('status', 'completed')
-                }
-            else:
-                return {
-                    'content': f"Unexpected response format: {response_data}",
-                    'status': 'error'
-                }
+            
+            # If we still don't have content, check the history for the latest agent message
+            if not content and 'history' in result:
+                history = result['history']
+                if isinstance(history, list):
+                    # Find the last agent message in history
+                    for msg in reversed(history):
+                        if msg.get('role') == 'agent' and 'parts' in msg:
+                            parts = msg['parts']
+                            if parts and isinstance(parts, list) and len(parts) > 0:
+                                if 'text' in parts[0]:
+                                    # Skip status messages, get actual content
+                                    text = parts[0]['text']
+                                    if text not in ['Searching for information...', 'Processing the results...']:
+                                        content = text
+                                        break
+            
+            # Final fallback - look for any text content in the response
+            if not content:
+                content = f"Response received but content format unexpected: {result}"
+            
+            return {
+                'content': content,
+                'task_id': result.get('id'),
+                'context_id': result.get('contextId'),
+                'status': result.get('status', {}).get('state', 'completed') if isinstance(result.get('status'), dict) else result.get('status', 'completed')
+            }
                 
         except Exception as e:
             logger.error(f"Error extracting response content: {e}")
