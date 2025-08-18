@@ -20,11 +20,13 @@ from a2a.types import (
 )
 from dotenv import load_dotenv
 
+# Configure LangSmith tracing for Parent Agent
+load_dotenv()
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_PROJECT"] = "A2A-Parent-Agent"
+
 from app.agent import Agent
 from app.agent_executor import GeneralAgentExecutor
-
-
-load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

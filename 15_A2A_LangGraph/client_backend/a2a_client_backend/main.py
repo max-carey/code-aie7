@@ -1,4 +1,5 @@
 import logging
+import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -7,11 +8,14 @@ import uvicorn
 import asyncio
 from dotenv import load_dotenv
 
+# Configure LangSmith tracing for Client Agent
+load_dotenv()
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_PROJECT"] = "A2A-Client-Agent"
+
 from .graph import build_client_agent_graph
 from .a2a_integration import A2AIntegration
 from .models import QueryRequest, ChatRequest, TaskResponse, ConversationMessage, RoutingDecision
-
-load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
