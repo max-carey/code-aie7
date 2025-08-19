@@ -22,6 +22,7 @@ dependencies = [
     "qdrant-client>=1.7.0",
     "pymupdf>=1.23.0",
     "langsmith>=0.1.0",
+    "langgraph-cli>=0.3.6",
 ]
 
 [tool.hatch.build.targets.wheel]

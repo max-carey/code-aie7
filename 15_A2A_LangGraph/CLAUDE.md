@@ -2,31 +2,37 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Development Commands
+## Quick Start - Run All Three Services
 
-### Setup and Installation
+### 1. A2A Parent Agent (Terminal 1)
 ```bash
-# Quick setup (installs uv, dependencies, creates .env)
-./quickstart.sh
-
-# Manual dependency management
-uv sync                    # Install dependencies
-uv add <package>          # Add new dependency
+uv sync
+uv run python -m app --host 0.0.0.0 --port 8181
 ```
 
-### Running the Application
+### 2. Client Backend (Terminal 2) 
 ```bash
-# Start A2A server (main application)
-uv run python -m app
+cd client_backend
+uv run uvicorn a2a_client_backend.main:app --host 0.0.0.0 --port 8001 --reload
+```
 
-# Start with custom host/port
-uv run python -m app --host 0.0.0.0 --port 8181
+### 3. React Frontend (Terminal 3)
+```bash
+cd client
+npm install
+npm run dev
+```
 
-# Test the agent API
+### 4. Access Web UI
+Open: **http://localhost:5174**
+
+## Testing Commands
+```bash
+# Check environment
+uv run python check_env.py
+
+# Test A2A API directly
 uv run python app/test_client.py
-
-# Start LangGraph development server
-uv run langgraph dev      # Available at http://localhost:2024
 ```
 
 ### Environment Validation
