@@ -1,3 +1,4 @@
 .DS_Store
 .env
 /16_Production_RAG_and_Guardrails/langgraph_agent_lib/__pycache__
+/16_Production_RAG_and_Guardrails/cache/embeddings
